@@ -1,0 +1,38 @@
+async function autoScrollAndSumPrices(delay = 1000, step = 10000) {
+    let lastHeight = document.body.scrollHeight;
+    const seenText = new Set();
+    let total = 0;
+
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    function extractPrices() {
+        const elements = document.querySelectorAll('.t7TQaf');
+        for (const el of elements) {
+            const text = el.innerText.trim();
+            if (!seenText.has(text) && /^฿[\d,]+$/.test(text)) {
+                seenText.add(text);
+                const number = parseFloat(text.replace(/[฿,]/g, ''));
+                total += number;
+                console.log(`เจอ: ${text} ➜ รวม: ฿${total.toLocaleString()}`);
+            }
+        }
+    }
+
+    while (true) {
+        extractPrices();
+
+        window.scrollBy(0, step);
+        await sleep(delay);
+
+        const newHeight = document.body.scrollHeight;
+        if (newHeight > lastHeight) {
+            lastHeight = newHeight;
+        } else {
+            extractPrices(); // ดึงอีกรอบสุดท้าย
+            console.log(`✅ เสร็จแล้ว รวมทั้งหมด: ฿${total.toLocaleString()}`);
+            break;
+        }
+    }
+}
+
+autoScrollAndSumPrices(); // เริ่มทำงาน!
